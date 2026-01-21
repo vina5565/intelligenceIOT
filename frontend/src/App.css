@@ -1,0 +1,68 @@
+.home-container {
+  background-color: #000; /* 검은색 배경 */
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+.subtitle {
+  margin-bottom: 20px; /* 아래쪽에 20px만큼 공백을 만듭니다. */
+}
+
+.login-box {
+  text-align: center;
+  border: 2px solid #333;
+  padding: 40px;
+  border-radius: 15px;
+  background-color: #111;
+}
+
+.title {
+  color: #ff3e3e; /* 빨간색 포인트 */
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.main-input {
+  padding: 12px;
+  width: 250px;
+  border-radius: 5px;
+  border: 1px solid #444;
+  background-color: #222;
+  color: white;
+  margin-bottom: 20px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.start-button {
+  padding: 12px 30px;
+  background-color: #ff3e3e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.start-button:hover {
+  background-color: #c32e2e;
+}
+
+.home-container {
+  background-color: #000;
+  width: 100vw;  /* 가로 너비를 브라우저 꽉 차게 (Viewport Width) */
+  height: 100vh; /* 세로 높이를 브라우저 꽉 차게 (Viewport Height) */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  
+  /* 만약 나중에 배경 이미지를 넣고 싶다면 아래 속성을 미리 써두면 좋습니다. */
+  background-size: cover;
+  background-position: center;
+  background: radial-gradient(circle, #1a1a2e 0%, #000000 100%);
+}
