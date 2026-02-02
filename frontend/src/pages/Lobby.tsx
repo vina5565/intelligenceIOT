@@ -22,6 +22,15 @@ interface Room {
   createdAt: Date;
 }
 
+interface ChatMessage {
+  id: string;
+  nickname: string;
+  university?: string;
+  message: string;
+  timestamp: number;
+  isGhost?: boolean;
+}
+
 export const Lobby: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -34,6 +43,10 @@ export const Lobby: React.FC = () => {
   const [newRoomName, setNewRoomName] = useState('');
   const [maxPlayers, setMaxPlayers] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // 채팅 관련 state
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState('');
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 
@@ -46,42 +59,39 @@ export const Lobby: React.FC = () => {
 
     const newSocket = io(BACKEND_URL);
     setSocket(newSocket);
+    
+    // Socket을 window 객체에 저장 (컴포넌트 간 공유)
+    (window as any).gameSocket = newSocket;
 
     // 사용자 등록
     newSocket.emit('register', { nickname, university, userId });
 
-    // 방 목록 업데이트 수신
+    // 방 목록 업데이트
     newSocket.on('roomListUpdate', (updatedRooms: Room[]) => {
       setRooms(updatedRooms);
     });
 
-    // 방 생성 성공
-    newSocket.on('roomCreated', (room: Room) => {
-      setCurrentRoom(room);
-      setShowCreateModal(false);
-      setNewRoomName('');
+    // 방 정보 업데이트
+    newSocket.on('roomUpdate', (updatedRoom: Room) => {
+      setCurrentRoom(updatedRoom);
     });
 
     // 방 참가 성공
-    newSocket.on('roomJoined', (room: Room) => {
-      setCurrentRoom(room);
-    });
-
-    // 방 업데이트
-    newSocket.on('roomUpdate', (room: Room) => {
+    newSocket.on('joinedRoom', (room: Room) => {
       setCurrentRoom(room);
     });
 
     // 방 나가기 성공
     newSocket.on('leftRoom', () => {
       setCurrentRoom(null);
+      setChatMessages([]); // 채팅 초기화
     });
 
     // 게임 시작
     newSocket.on('gameStarted', (room: Room) => {
       console.log('게임 시작!', room);
-      // TODO: 게임 화면으로 이동
-      // navigate('/game', { state: { room } });
+      // 게임 화면으로 이동 (socket은 window 객체에서 가져옴)
+      navigate('/game', { state: { room, nickname } });
     });
 
     // 에러 처리
@@ -89,8 +99,15 @@ export const Lobby: React.FC = () => {
       alert(error.message);
     });
 
+    // 채팅 메시지 수신 (방 채팅)
+    newSocket.on('roomChatMessage', (msg: ChatMessage) => {
+      setChatMessages(prev => [...prev.slice(-99), msg]); // 최대 100개 메시지 유지
+    });
+
+    // cleanup: socket은 닫지 않음 (게임 화면에서 사용)
     return () => {
-      newSocket.close();
+      newSocket.off('roomChatMessage');
+      // newSocket.close(); // 제거: 게임 화면으로 이동 시에도 socket 유지
     };
   }, [nickname, university, userId, navigate, BACKEND_URL]);
 
@@ -125,6 +142,15 @@ export const Lobby: React.FC = () => {
   // 게임 시작
   const handleStartGame = () => {
     socket?.emit('startGame');
+  };
+
+  // 채팅 메시지 전송
+  const handleSendChat = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+    
+    socket?.emit('roomChatMessage', chatInput);
+    setChatInput('');
   };
 
   // 방 목록 필터링
@@ -193,6 +219,39 @@ export const Lobby: React.FC = () => {
                 게임 시작
               </button>
             )}
+          </div>
+
+          {/* 채팅 UI - 왼쪽 아래 */}
+          <div className="chat-container">
+            <div className="chat-header">
+              <h3>💬 채팅</h3>
+            </div>
+            <div className="chat-messages">
+              {chatMessages.length === 0 ? (
+                <p className="chat-empty">채팅을 시작해보세요!</p>
+              ) : (
+                chatMessages.map((msg, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`chat-message ${msg.id === socket?.id ? 'own' : ''}`}
+                  >
+                    <span className="chat-nickname">{msg.nickname}</span>
+                    <span className="chat-text">{msg.message}</span>
+                  </div>
+                ))
+              )}
+            </div>
+            <form className="chat-input-form" onSubmit={handleSendChat}>
+              <input
+                type="text"
+                className="chat-input"
+                placeholder="메시지를 입력하세요..."
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                maxLength={200}
+              />
+              <button type="submit" className="chat-send-btn">전송</button>
+            </form>
           </div>
         </div>
       </div>

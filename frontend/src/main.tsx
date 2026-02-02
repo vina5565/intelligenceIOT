@@ -4,7 +4,6 @@ import './index.css'
 import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+  // StrictMode disabled to prevent double rendering which causes duplicate socket events
+  <App />
 )

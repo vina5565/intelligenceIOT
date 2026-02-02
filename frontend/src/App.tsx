@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Home } from './pages/Home';
 import { Lobby } from './pages/Lobby';
+import { Game } from './pages/Game';
 import './App.css';
 
 function App() {
@@ -15,6 +16,9 @@ function App() {
         
         {/* "/lobby" 주소일 때는 Lobby 컴포넌트를 보여줍니다. */}
         <Route path="/lobby" element={<Lobby />} />
+        
+        {/* "/game" 주소일 때는 Game 컴포넌트를 보여줍니다. */}
+        <Route path="/game" element={<Game />} />
       </Routes>
     </BrowserRouter>
   );

@@ -5,7 +5,7 @@ npm install
 npm install axios
 npm install react-router-dom
 npm install socket.io-client
-
+npm install phaser
 입력
 
 

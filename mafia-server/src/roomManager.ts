@@ -9,6 +9,14 @@ export interface Player {
   isReady: boolean;
 }
 
+export interface PlayerGameState {
+  id: string;
+  x: number;
+  y: number;
+  color: string;
+  nickname: string;
+}
+
 export interface Room {
   id: string;
   name: string;
@@ -17,6 +25,7 @@ export interface Room {
   maxPlayers: number;
   status: 'waiting' | 'in-game' | 'finished';
   createdAt: Date;
+  gameStates?: Map<string, PlayerGameState>; // 게임 중 플레이어 상태
 }
 
 class RoomManager {
@@ -150,9 +159,9 @@ class RoomManager {
       return { success: false, error: '방장만 게임을 시작할 수 있습니다.' };
     }
 
-    // 최소 인원 체크 (예: 4명)
-    if (room.players.length < 4) {
-      return { success: false, error: '최소 4명 이상이어야 게임을 시작할 수 있습니다.' };
+    // 최소 인원 체크 (테스트: 2명, 실제 게임: 4명)
+    if (room.players.length < 2) {
+      return { success: false, error: '최소 2명 이상이어야 게임을 시작할 수 있습니다.' };
     }
 
     // 모든 플레이어가 준비되었는지 확인
@@ -180,6 +189,46 @@ class RoomManager {
     return this.playerRoomMap.get(socketId);
   }
 
+  // 플레이어 게임 상태 업데이트
+  updatePlayerGameState(socketId: string, gameState: Partial<PlayerGameState>): boolean {
+    const roomId = this.playerRoomMap.get(socketId);
+    if (!roomId) return false;
+
+    const room = this.rooms.get(roomId);
+    if (!room) return false;
+
+    if (!room.gameStates) {
+      room.gameStates = new Map();
+    }
+
+    const currentState = room.gameStates.get(socketId);
+    if (currentState) {
+      room.gameStates.set(socketId, { ...currentState, ...gameState });
+    } else {
+      const player = room.players.find(p => p.id === socketId);
+      if (!player) return false;
+      
+      room.gameStates.set(socketId, {
+        id: socketId,
+        x: gameState.x || 400,
+        y: gameState.y || 300,
+        color: gameState.color || '#00d4ff',
+        nickname: player.nickname,
+        ...gameState
+      });
+    }
+
+    return true;
+  }
+
+  // 방의 모든 플레이어 게임 상태 가져오기
+  getPlayerGameStates(roomId: string): PlayerGameState[] {
+    const room = this.rooms.get(roomId);
+    if (!room || !room.gameStates) return [];
+    
+    return Array.from(room.gameStates.values());
+  }
+
   // 방 ID 생성 (간단한 랜덤 ID)
   private generateRoomId(): string {
     return `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -188,3 +237,4 @@ class RoomManager {
 
 // 싱글톤 인스턴스 export
 export const roomManager = new RoomManager();
+
