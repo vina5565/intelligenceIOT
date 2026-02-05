@@ -1,6 +1,6 @@
 
 현재 폴더인 mafia-server 위치 에서 다음 명령어를 실행
 
-//npm install//
+npm install
 npm install express @supabase/supabase-js cors dotenv socket.io
 npm install -D typescript @types/node @types/express ts-node-dev

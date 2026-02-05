@@ -646,6 +646,18 @@
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
+/* 로비 채팅 전용 스타일 */
+.lobby-chat {
+  right: 20px;
+  left: auto;
+}
+
+.chat-university {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-left: 6px;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .lobby-header {
@@ -673,5 +685,10 @@
   .chat-container {
     width: calc(100% - 40px);
     height: 250px;
+  }
+
+  .lobby-chat {
+    right: 20px;
+    left: 20px;
   }
 }
